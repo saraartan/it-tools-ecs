@@ -1,5 +1,7 @@
 node_modules
-playwright-report
-coverage
+.git
+.gitignore
 dist
-test-results
+*.md
+.DS_Store
+.env
