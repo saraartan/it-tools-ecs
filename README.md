@@ -38,6 +38,16 @@ flowchart TB
     end
 
     User["Browser"] -->|https://| R53
+
+    classDef external fill:#7F77DD,stroke:#3C3489,color:#fff
+    classDef cicd fill:#1D9E75,stroke:#085041,color:#fff
+    classDef aws fill:#378ADD,stroke:#0C447C,color:#fff
+    classDef registry fill:#D85A30,stroke:#712B13,color:#fff
+
+    class Dev,User external
+    class GH,GHA,Build,TFDeploy,Health cicd
+    class R53,ALB,ACM,TG,Task aws
+    class ECR registry
 ```
 
 **Flow:** a push to `main` triggers GitHub Actions, which builds the Docker image, pushes it to ECR, then runs `terraform apply` to update the ECS service — all authenticated via OIDC (no long-lived AWS credentials stored in GitHub). The load balancer continuously health-checks the running task via `/health` and only routes traffic to healthy instances.
