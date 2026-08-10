@@ -100,8 +100,8 @@ flowchart TB
 
 ```bash
 # 1. Clone this repo
-git clone https://github.com/saraartan/it-tools-devops-project.git
-cd it-tools-devops-project
+git clone https://github.com/saraartan/it-tools-ecs.git
+cd it-tools-ecs
 
 # 2. Build and test the container locally
 docker build -t it-tools .
