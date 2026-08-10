@@ -68,7 +68,10 @@ flowchart TB
 
 ## Screenshots
 
-**Docker container running healthy:**
+**Local health check (Phase 1):**
+![Health check](screenshots/phase1-health-check.png)
+
+**Docker container running healthy (Phase 2):**
 ![Docker healthy](screenshots/phase2-docker-healthy.png)
 
 **App live on AWS:**
