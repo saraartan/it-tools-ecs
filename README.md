@@ -75,7 +75,9 @@ flowchart TB
 ![Live site](screenshots/phase5-terraform-live.png)
 
 **Successful CI/CD pipeline run:**
-![Pipeline success](screenshots/phase6-pipeline-success.png)
+![Pipeline overview](screenshots/phase6-terraform-deploy.png)
+![Build and push job](screenshots/phase6-build-and-push.png)
+![Health check job](screenshots/phase6-health-check.png)
 
 **Valid HTTPS on custom domain:**
 ![HTTPS padlock](screenshots/phase7-https-padlock.png)
