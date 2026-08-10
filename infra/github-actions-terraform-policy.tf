@@ -10,6 +10,7 @@ resource "aws_iam_role_policy" "github_actions_terraform" {
         Action = [
           "acm:ListCertificates",
           "acm:DescribeCertificate",
+          "acm:GetCertificate",
           "route53:GetHostedZone",
           "route53:ListResourceRecordSets",
           "route53:ChangeResourceRecordSets",
