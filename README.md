@@ -71,7 +71,30 @@ flowchart TB
 - **CI/CD:** GitHub Actions, OIDC federation (no stored AWS keys)
 
 ## Repository structure
-*Note: application source code sits at the repository root rather than in a separate `app/` subdirectory — this keeps Dockerfile build paths simple and matches how the upstream it-tools repo is structured.*
+```
+├── app/                     # Application source (it-tools: Vue 3 + Vite)
+│   ├── src/
+│   ├── public/
+│   ├── package.json
+│   └── ...
+├── Dockerfile                # Multi-stage build: Node build -> nginx runtime
+├── .dockerignore
+├── infra/                    # All Terraform configuration
+│   ├── provider.tf
+│   ├── variables.tf
+│   ├── ecs.tf
+│   ├── alb.tf
+│   ├── ecs-service.tf
+│   ├── dns.tf
+│   ├── github-oidc.tf
+│   ├── backend.tf
+│   └── outputs.tf
+├── .github/workflows/
+│   └── deploy.yml
+├── screenshots/
+├── README.md
+└── .gitignore
+```
 
 ## Screenshots
 
