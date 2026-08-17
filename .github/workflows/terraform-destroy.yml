@@ -1,0 +1,46 @@
+name: Terraform Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "destroy" to confirm you want to tear down all infrastructure'
+        required: true
+
+env:
+  AWS_REGION: us-east-1
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  destroy:
+    name: Terraform Destroy
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.confirm == 'destroy' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::712607540523:role/it-tools-github-actions
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.8"
+
+      - name: Terraform Init
+        working-directory: ./terraform
+        run: terraform init
+
+      - name: Terraform Destroy
+        working-directory: ./terraform
+        run: |
+          terraform destroy -auto-approve \
+            -var="hosted_zone_id=Z05194711E3CA9BU0P1X3" \
+            -var="container_image=712607540523.dkr.ecr.us-east-1.amazonaws.com/it-tools:latest"

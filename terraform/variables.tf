@@ -35,5 +35,5 @@ variable "container_port" {
 variable "github_repo" {
   description = "GitHub repo in owner/repo format, for OIDC trust"
   type        = string
-  default     = "saraartan/it-tools-devops-project"
+  default     = "saraartan/it-tools-ecs"
 }

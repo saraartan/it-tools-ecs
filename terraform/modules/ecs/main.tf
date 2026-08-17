@@ -70,3 +70,48 @@ resource "aws_ecs_task_definition" "app" {
     }
   ])
 }
+
+resource "aws_security_group" "service" {
+  name        = "${var.project_name}-service-sg"
+  description = "Allows traffic from ALB to ${var.project_name} containers"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    description     = "From ALB"
+    from_port       = var.container_port
+    to_port         = var.container_port
+    protocol        = "tcp"
+    security_groups = [var.alb_security_group_id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.project_name}-service-sg"
+  }
+}
+
+resource "aws_ecs_service" "app" {
+  name            = "${var.project_name}-service"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.app.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets          = var.subnet_ids
+    security_groups  = [aws_security_group.service.id]
+    assign_public_ip = true
+  }
+
+  load_balancer {
+    target_group_arn = var.target_group_arn
+    container_name    = var.project_name
+    container_port    = var.container_port
+  }
+}

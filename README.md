@@ -71,28 +71,33 @@ flowchart TB
 - **CI/CD:** GitHub Actions, OIDC federation (no stored AWS keys)
 
 ## Repository structure
+
 ```
-├── app/                     # Application source (it-tools: Vue 3 + Vite)
-│   ├── src/
-│   ├── public/
-│   ├── package.json
-│   └── ...
-├── Dockerfile                # Multi-stage build: Node build -> nginx runtime
-├── .dockerignore
-├── infra/                    # All Terraform configuration
-│   ├── provider.tf
+it-tools-ecs/
+├── app/                         # Application source (it-tools: Vue 3 + Vite)
+├── bootstrap/                   # One-time setup before Terraform can run
+│   ├── setup.sh                 # Creates S3 state bucket + ECR repo
+│   └── README.md
+├── terraform/                   # Infrastructure as Code
+│   ├── main.tf                  # Root module -- wires the modules together
 │   ├── variables.tf
-│   ├── ecs.tf
-│   ├── alb.tf
-│   ├── ecs-service.tf
-│   ├── dns.tf
-│   ├── github-oidc.tf
-│   ├── backend.tf
-│   └── outputs.tf
+│   ├── outputs.tf
+│   ├── provider.tf
+│   ├── backend.tf               # S3 remote state config
+│   ├── github-oidc.tf           # OIDC trust for CI/CD
+│   └── modules/
+│       ├── vpc/                 # VPC + subnet lookup
+│       ├── alb/                 # ALB, listeners, target group, security group
+│       ├── ecs/                 # Cluster, service, task def, IAM, logs
+│       └── acm/                 # TLS certificate lookup
 ├── .github/workflows/
-│   └── deploy.yml
-├── screenshots/
+│   ├── docker-build.yml         # Build + push image to ECR
+│   ├── terraform-deploy.yml     # fmt, validate, apply, health check
+│   └── terraform-destroy.yml    # Manual-only destroy pipeline
+├── Dockerfile                   # Multi-stage build: Node build -> nginx runtime
+├── .dockerignore
 ├── README.md
+├── screenshots/
 └── .gitignore
 ```
 
@@ -144,21 +149,28 @@ aws ecr get-login-password --region <region> | docker login --username AWS --pas
 docker tag it-tools:latest <account-id>.dkr.ecr.<region>.amazonaws.com/it-tools:latest
 docker push <account-id>.dkr.ecr.<region>.amazonaws.com/it-tools:latest
 
-# 4. Set up Terraform variables
-cd infra
+# 4. Run the bootstrap script (creates S3 state bucket + ECR repo, if not done in step 3)
+cd bootstrap
+chmod +x setup.sh
+./setup.sh
+cd ..
+
+# 5. Set up Terraform variables
+cd terraform
 cat > terraform.tfvars << TFVARS
 hosted_zone_id  = "<your-route53-hosted-zone-id>"
 container_image = "<account-id>.dkr.ecr.<region>.amazonaws.com/it-tools:latest"
 TFVARS
 
-# 5. Provision the infrastructure
+# 6. Provision the infrastructure
 terraform init
 terraform plan
 terraform apply
 
-# 6. Set up GitHub Actions
-# - Add the github_actions_role_arn output as the role-to-assume in .github/workflows/deploy.yml
-# - Push to main to trigger the pipeline
+# 7. Set up GitHub Actions
+# - Add the github_actions_role_arn output as the role-to-assume in the
+#   .github/workflows/*.yml files
+# - Push to main to trigger docker-build.yml, which triggers terraform-deploy.yml
 ```
 
 ## Cleaning up
