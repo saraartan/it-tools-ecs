@@ -19,43 +19,7 @@ Current traffic is minimal -- this is a portfolio deployment, not a production p
 
 ## Architecture
 
-```mermaid
-flowchart TB
-    Dev["Developer"] -->|git push| GH["GitHub Repository"]
-    GH -->|triggers| GHA["GitHub Actions Pipeline"]
-
-    subgraph CICD["CI/CD Pipeline (OIDC auth, no static keys)"]
-        Build["Build & Push\nDocker Image"]
-        TFDeploy["Terraform Apply"]
-        Health["Post-Deploy\nHealth Check"]
-        Build --> TFDeploy --> Health
-    end
-
-    GHA --> Build
-
-    Build -->|push image| ECR["Amazon ECR"]
-    TFDeploy -->|provisions| AWS
-
-    subgraph AWS["AWS (us-east-1)"]
-        R53["Route 53\ntools.saraartan.com"] --> ALB["Application Load Balancer\nHTTPS:443 + HTTP redirect"]
-        ACM["ACM Certificate"] -.->|TLS| ALB
-        ALB --> TG["Target Group\n/health check"]
-        TG --> Task["ECS Fargate Task\n(nginx + it-tools, port 8080)"]
-        ECR -.->|image pull| Task
-    end
-
-    User["Browser"] -->|https://| R53
-
-    classDef external fill:#7F77DD,stroke:#3C3489,color:#fff
-    classDef cicd fill:#1D9E75,stroke:#085041,color:#fff
-    classDef aws fill:#378ADD,stroke:#0C447C,color:#fff
-    classDef registry fill:#D85A30,stroke:#712B13,color:#fff
-
-    class Dev,User external
-    class GH,GHA,Build,TFDeploy,Health cicd
-    class R53,ALB,ACM,TG,Task aws
-    class ECR registry
-```
+![AWS architecture diagram](architecture-it-tools.png)
 
 **Flow:** a push to `main` triggers GitHub Actions, which builds the Docker image, pushes it to ECR, then runs `terraform apply` to update the ECS service — all authenticated via OIDC (no long-lived AWS credentials stored in GitHub). The load balancer continuously health-checks the running task via `/health` and only routes traffic to healthy instances.
 
