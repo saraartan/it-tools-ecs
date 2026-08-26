@@ -1,6 +1,6 @@
-# it-tools — Deployed on AWS ECS with Terraform & CI/CD
+# it-tools: Deployed on AWS ECS with Terraform & CI/CD
 
-A live deployment of [it-tools](https://github.com/CorentinTh/it-tools) — an open-source developer utilities web app — containerized with Docker, hosted on AWS ECS Fargate, provisioned entirely with Terraform, and deployed automatically via GitHub Actions.
+A deployment of [it-tools](https://github.com/CorentinTh/it-tools), an open-source developer utilities web app. It's containerized with Docker, hosted on AWS ECS Fargate, provisioned with Terraform, and deployed automatically via GitHub Actions.
 
 **Live URL:** [https://tools.saraartan.com](https://tools.saraartan.com)
 
@@ -8,25 +8,25 @@ A live deployment of [it-tools](https://github.com/CorentinTh/it-tools) — an o
 
 This project takes an existing open-source web application and deploys it the way a real production workload would be: containerized, load-balanced, secured with HTTPS on a custom domain, defined entirely as infrastructure-as-code, and deployed automatically on every push to `main`.
 
-The infrastructure was first built manually through the AWS Console (ClickOps) to understand each component, then torn down and rebuilt identically using Terraform — matching the project's "understand first, automate later" philosophy.
+The infrastructure was first built manually through the AWS Console (ClickOps) to understand each component, then torn down and rebuilt identically using Terraform, matching the project's "understand first, automate later" philosophy.
 
 
 ## Why this app, why ECS, and expected scale
 
-I hosted it on ECS deliberately. Vercel or Netlify would get this specific app live faster, but they abstract away exactly what I wanted to build: load balancing with real health checks, IAM-scoped access control, infrastructure defined as code instead of console clicks. A VM was never the right call either -- that's server administration, not container orchestration. ECS on Fargate gives full control over networking, scaling, and security without the overhead of managing the underlying compute. I built the stack manually in the AWS console first to understand every component, then rebuilt it identically in Terraform and automated the whole pipeline with GitHub Actions.
+I hosted it on ECS deliberately. Vercel or Netlify would get this specific app live faster, but they abstract away exactly what I wanted to build: load balancing with real health checks, IAM-scoped access control, infrastructure defined as code instead of console clicks. A VM was never the right call either. That's server administration, not container orchestration. ECS on Fargate gives full control over networking, scaling, and security without the overhead of managing the underlying compute. I built the stack manually in the AWS console first to understand every component, then rebuilt it identically in Terraform and automated the whole pipeline with GitHub Actions.
 
-Current traffic is minimal -- this is a portfolio deployment, not a production product. But it's architected to scale: 0.5 vCPU and 1GB of memory comfortably serves a few hundred concurrent users as-is, and scaling further is a config change, not a redesign -- increase the desired task count or attach a CPU-based autoscaling policy, and the load balancer distributes traffic automatically. At real scale -- tens of thousands of daily users -- the next move is CloudFront in front of the load balancer to cache static assets at the edge. For a fully static app at that volume, I would weigh ECS against a simpler S3 + CloudFront setup. For this project's purpose -- demonstrating production-grade container orchestration -- ECS was the right architecture.
+Current traffic is minimal since this is a portfolio deployment, not a production product. But it's architected to scale: 0.5 vCPU and 1GB of memory comfortably serves a few hundred concurrent users as-is, and scaling further is a config change, not a redesign: increase the desired task count or attach a CPU-based autoscaling policy, and the load balancer distributes traffic automatically. At real scale, say tens of thousands of daily users, the next move is CloudFront in front of the load balancer to cache static assets at the edge. For a fully static app at that volume, I would weigh ECS against a simpler S3 + CloudFront setup. For this project's purpose of demonstrating production-grade container orchestration, ECS was the right architecture.
 
 ## Architecture
 
 ![AWS architecture diagram](architecture-it-tools.png)
 
-**Flow:** a push to `main` triggers GitHub Actions, which builds the Docker image, pushes it to ECR, then runs `terraform apply` to update the ECS service — all authenticated via OIDC (no long-lived AWS credentials stored in GitHub). The load balancer continuously health-checks the running task via `/health` and only routes traffic to healthy instances.
+**Flow:** a push to `main` triggers GitHub Actions, which builds the Docker image, pushes it to ECR, then runs `terraform apply` to update the ECS service. All of this is authenticated via OIDC, so no long-lived AWS credentials are stored in GitHub. The load balancer continuously health-checks the running task via `/health` and only routes traffic to healthy instances.
 
 ## Tech stack
 
 - **App:** [it-tools](https://github.com/CorentinTh/it-tools) (Vue 3 / Vite, static SPA)
-- **Container:** Docker, multi-stage build (Node builder → nginx-unprivileged runtime), non-root user
+- **Container:** Docker, multi-stage build (Node builder → nginx-unprivileged runtime), non-root user. Final image is 100MB vs 387MB for the base Node build image alone (a 74% reduction), since only the compiled static files ship in the production stage.
 - **Registry:** Amazon ECR
 - **Compute:** AWS ECS on Fargate (serverless containers)
 - **Networking:** Application Load Balancer, two-tier security groups (ALB open to internet, service only reachable from ALB)
@@ -43,7 +43,7 @@ it-tools-ecs/
 │   ├── setup.sh                 # Creates S3 state bucket + ECR repo
 │   └── README.md
 ├── terraform/                   # Infrastructure as Code
-│   ├── main.tf                  # Root module -- wires the modules together
+│   ├── main.tf                  # Root module, wires the modules together
 │   ├── variables.tf
 │   ├── outputs.tf
 │   ├── provider.tf
@@ -86,12 +86,12 @@ it-tools-ecs/
 
 ## How it was built
 
-1. **App setup** — cloned it-tools, added a static `/health` endpoint (`public/health`) for load balancer health checks, verified locally with `pnpm dev`.
-2. **Containerization** — wrote a multi-stage Dockerfile (Node build stage → nginx-unprivileged runtime stage), non-root user, health check baked in.
-3. **Registry** — pushed the built image to a private, vulnerability-scanned ECR repository, tagged by commit SHA.
-4. **Manual infrastructure (ClickOps)** — built the full stack by hand in the AWS Console (ACM, security groups, ECS cluster/task/service, ALB, Route 53) to understand each piece, confirmed the site was live, then tore it all down.
-5. **Terraform** — rebuilt the identical infrastructure as code, with resources referencing each other's actual IDs (eliminating an entire class of misconfiguration bugs encountered during the manual build).
-6. **CI/CD** — added a GitHub Actions pipeline authenticating to AWS via OIDC (no stored credentials), building and pushing the image, running `terraform apply`, and verifying the live `/health` endpoint post-deploy.
+1. **App setup**: cloned it-tools, added a static `/health` endpoint (`public/health`) for load balancer health checks, verified locally with `pnpm dev`.
+2. **Containerization**: wrote a multi-stage Dockerfile (Node build stage → nginx-unprivileged runtime stage), non-root user, health check baked in.
+3. **Registry**: pushed the built image to a private, vulnerability-scanned ECR repository, tagged by commit SHA.
+4. **Manual infrastructure (ClickOps)**: built the full stack by hand in the AWS Console (ACM, security groups, ECS cluster/task/service, ALB, Route 53) to understand each piece, confirmed the site was live, then tore it all down.
+5. **Terraform**: rebuilt the identical infrastructure as code, with resources referencing each other's actual IDs (eliminating an entire class of misconfiguration bugs encountered during the manual build).
+6. **CI/CD**: added a GitHub Actions pipeline authenticating to AWS via OIDC (no stored credentials), building and pushing the image, running `terraform apply`, and verifying the live `/health` endpoint post-deploy.
 
 ## Reproducing this setup
 
