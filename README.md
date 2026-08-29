@@ -2,7 +2,9 @@
 
 A deployment of [it-tools](https://github.com/CorentinTh/it-tools), an open-source developer utilities web app. It's containerized with Docker, hosted on AWS ECS Fargate, provisioned with Terraform, and deployed automatically via GitHub Actions.
 
-**Live URL:** [https://tools.saraartan.com](https://tools.saraartan.com)
+**Demo:** the infrastructure is torn down between sessions to avoid ongoing AWS costs, so here's the app running locally instead of a live link:
+
+![Demo of it-tools running](demo.gif)
 
 ## Overview
 
