@@ -1,4 +1,4 @@
-name: Terraform Deploy
+name: Terraform Plan
 
 on:
   workflow_run:
@@ -15,8 +15,8 @@ permissions:
   contents: read
 
 jobs:
-  terraform:
-    name: Format, Validate & Apply
+  plan:
+    name: Format, Validate, Scan & Plan
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     steps:
@@ -37,7 +37,6 @@ jobs:
       - name: Terraform Format Check
         working-directory: ./terraform
         run: terraform fmt -check -recursive
-        continue-on-error: true
 
       - name: Terraform Init
         working-directory: ./terraform
@@ -47,33 +46,31 @@ jobs:
         working-directory: ./terraform
         run: terraform validate
 
+      - name: Run tfsec security scan
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: ./terraform
+          soft_fail: true
+
       - name: Determine image tag
         id: image
         run: |
           SHA="${{ github.event.workflow_run.head_sha || github.sha }}"
           echo "tag=712607540523.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPOSITORY:$SHA" >> "$GITHUB_OUTPUT"
+          echo "$SHA" > /tmp/image_sha.txt
 
-      - name: Terraform Apply
+      - name: Terraform Plan
         working-directory: ./terraform
         run: |
-          terraform apply -auto-approve \
+          terraform plan -out=tfplan \
             -var="hosted_zone_id=Z05194711E3CA9BU0P1X3" \
             -var="container_image=${{ steps.image.outputs.tag }}"
 
-  post-deploy-check:
-    name: Post-Deploy Health Check
-    runs-on: ubuntu-latest
-    needs: terraform
-    steps:
-      - name: Wait for deployment to stabilize
-        run: sleep 45
-
-      - name: Check health endpoint
-        run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://tools.saraartan.com/health)
-          echo "Health check returned: $STATUS"
-          if [ "$STATUS" -ne 200 ]; then
-            echo "Health check failed!"
-            exit 1
-          fi
-          echo "Health check passed!"
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: |
+            terraform/tfplan
+            /tmp/image_sha.txt
+          retention-days: 1

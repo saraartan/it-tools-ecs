@@ -58,7 +58,8 @@ it-tools-ecs/
 │       └── acm/                 # TLS certificate lookup
 ├── .github/workflows/
 │   ├── docker-build.yml         # Build + push image to ECR
-│   ├── terraform-deploy.yml     # fmt, validate, apply, health check
+│   ├── terraform-plan.yml       # fmt, validate, tfsec scan, plan
+│   ├── terraform-apply.yml      # apply plan, health check
 │   └── terraform-destroy.yml    # Manual-only destroy pipeline
 ├── Dockerfile                   # Multi-stage build: Node build -> nginx runtime
 ├── .dockerignore
@@ -136,7 +137,8 @@ terraform apply
 # 7. Set up GitHub Actions
 # - Add the github_actions_role_arn output as the role-to-assume in the
 #   .github/workflows/*.yml files
-# - Push to main to trigger docker-build.yml, which triggers terraform-deploy.yml
+# - Push to main to trigger docker-build.yml, which triggers terraform-plan.yml,
+#   which triggers terraform-apply.yml
 ```
 
 ## Cleaning up
