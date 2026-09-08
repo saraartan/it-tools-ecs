@@ -47,7 +47,7 @@ jobs:
           echo "registry=$ECR_REGISTRY" >> "$GITHUB_OUTPUT"
 
       - name: Scan image for vulnerabilities
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: ${{ steps.build.outputs.image }}
           format: table
