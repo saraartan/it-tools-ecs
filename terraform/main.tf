@@ -8,24 +8,24 @@ module "acm" {
 }
 
 module "alb" {
-  source           = "./modules/alb"
-  project_name     = var.project_name
-  vpc_id           = module.vpc.vpc_id
-  subnet_ids       = module.vpc.subnet_ids
-  certificate_arn  = module.acm.certificate_arn
-  container_port   = var.container_port
+  source          = "./modules/alb"
+  project_name    = var.project_name
+  vpc_id          = module.vpc.vpc_id
+  subnet_ids      = module.vpc.subnet_ids
+  certificate_arn = module.acm.certificate_arn
+  container_port  = var.container_port
 }
 
 module "ecs" {
-  source                 = "./modules/ecs"
-  project_name           = var.project_name
-  aws_region             = var.aws_region
-  vpc_id                 = module.vpc.vpc_id
-  subnet_ids             = module.vpc.subnet_ids
-  container_image        = var.container_image
-  container_port         = var.container_port
-  alb_security_group_id  = module.alb.alb_security_group_id
-  target_group_arn       = module.alb.target_group_arn
+  source                = "./modules/ecs"
+  project_name          = var.project_name
+  aws_region            = var.aws_region
+  vpc_id                = module.vpc.vpc_id
+  subnet_ids            = module.vpc.subnet_ids
+  container_image       = var.container_image
+  container_port        = var.container_port
+  alb_security_group_id = module.alb.alb_security_group_id
+  target_group_arn      = module.alb.target_group_arn
 }
 
 resource "aws_route53_record" "app" {
