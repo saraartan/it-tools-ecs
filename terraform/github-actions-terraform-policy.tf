@@ -11,6 +11,7 @@ resource "aws_iam_role_policy" "github_actions_terraform" {
           "acm:*",
           "route53:*",
           "ecs:*",
+          "dynamodb:*",
           "iam:GetRole",
           "iam:CreateRole",
           "iam:DeleteRole",
