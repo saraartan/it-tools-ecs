@@ -32,8 +32,3 @@ variable "container_port" {
   default     = 8080
 }
 
-variable "github_repo" {
-  description = "GitHub repo in owner/repo format, for OIDC trust"
-  type        = string
-  default     = "saraartan/it-tools-ecs"
-}

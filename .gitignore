@@ -37,3 +37,8 @@ terraform/terraform.tfvars
 terraform/.terraform/
 *.tfstate*
 terraform/*.tfstate*
+
+# Bootstrap terraform local state/cache
+bootstrap/terraform/.terraform/
+bootstrap/terraform/terraform.tfstate*
+bootstrap/terraform/*.tfstate*
