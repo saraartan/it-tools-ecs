@@ -34,7 +34,7 @@ Current traffic is minimal since this is a portfolio deployment, not a productio
 - **Networking:** Application Load Balancer, two-tier security groups (ALB open to internet, service only reachable from ALB)
 - **DNS & TLS:** Route 53 (subdomain-delegated from Cloudflare) + AWS Certificate Manager
 - **Infrastructure as Code:** Terraform, remote state in S3
-- **CI/CD:** GitHub Actions, OIDC federation (no stored AWS keys)
+- **CI/CD:** GitHub Actions, OIDC federation (no stored AWS keys), IAM role ARN stored as a repository secret rather than hardcoded in workflow files
 
 ## Repository structure
 
