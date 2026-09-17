@@ -41,20 +41,13 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Debug - list files
-        run: |
-          echo "=== Repo root ==="
-          ls -la
-          echo "=== terraform/ ==="
-          ls -la terraform/
-
       - name: Terraform Init
         working-directory: ./terraform
         run: terraform init
 
       - name: Terraform Apply
         working-directory: ./terraform
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve ../tfplan
 
   post-deploy-check:
     name: Post-Deploy Health Check
