@@ -53,12 +53,13 @@ it-tools-ecs/
 │   ├── outputs.tf
 │   ├── provider.tf
 │   ├── backend.tf               # S3 remote state config
-│   ├── github-oidc.tf           # OIDC trust for CI/CD
+│   ├── dynamodb.tf              # State locking table
 │   └── modules/
 │       ├── vpc/                 # VPC + subnet lookup
 │       ├── alb/                 # ALB, listeners, target group, security group
 │       ├── ecs/                 # Cluster, service, task def, IAM, logs
-│       └── acm/                 # TLS certificate lookup
+│       ├── acm/                 # TLS certificate lookup
+│       └── route53/             # DNS record for the ALB
 ├── .github/workflows/
 │   ├── docker-build.yml         # Build + push image to ECR
 │   ├── terraform-plan.yml       # fmt, validate, tfsec scan, plan
