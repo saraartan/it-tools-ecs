@@ -28,14 +28,10 @@ module "ecs" {
   target_group_arn      = module.alb.target_group_arn
 }
 
-resource "aws_route53_record" "app" {
-  zone_id = var.hosted_zone_id
-  name    = var.domain_name
-  type    = "A"
-
-  alias {
-    name                   = module.alb.alb_dns_name
-    zone_id                = module.alb.alb_zone_id
-    evaluate_target_health = true
-  }
+module "route53" {
+  source         = "./modules/route53"
+  hosted_zone_id = var.hosted_zone_id
+  domain_name    = var.domain_name
+  alb_dns_name   = module.alb.alb_dns_name
+  alb_zone_id    = module.alb.alb_zone_id
 }
