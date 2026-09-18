@@ -43,6 +43,9 @@ it-tools-ecs/
 ├── app/                         # Application source (it-tools: Vue 3 + Vite)
 ├── bootstrap/                   # One-time setup before Terraform can run
 │   ├── setup.sh                 # Creates S3 state bucket + ECR repo
+│   ├── terraform/                # Separate Terraform config for OIDC + CI/CD IAM role
+│   │   └── modules/oidc/          # Kept independent so destroying the main app
+│   │                               # never breaks CI/CD authentication
 │   └── README.md
 ├── terraform/                   # Infrastructure as Code
 │   ├── main.tf                  # Root module, wires the modules together
